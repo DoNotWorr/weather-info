@@ -1,25 +1,42 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import WeatherContainer from "./components/WeatherContainer";
+import SearchForm from "./components/SearchForm";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const API_KEY = process.env.REACT_APP_API_KEY;
+
+export default class App extends Component {
+  state = { weatherData: undefined };
+
+  updateCity = async (city) => {
+    const weatherData = await this.getWeather(city);
+    this.setState({ weatherData: weatherData });
+  };
+
+  getWeather = async (city) => {
+    console.log(API_KEY);
+    try {
+      const apiCall = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
+      );
+      const response = await apiCall.json();
+      if (response.cod === 200) {
+        return response;
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  render() {
+    return (
+      <>
+        <SearchForm parentCallback={this.updateCity} />
+        {this.state.weatherData ? (
+          <WeatherContainer weatherData={this.state.weatherData} />
+        ) : (
+          <p>No city found</p>
+        )}
+      </>
+    );
+  }
 }
-
-export default App;
